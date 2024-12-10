@@ -1,4 +1,4 @@
-# mnist
+# flutter_mnist_viz
 
 A new Flutter project.
 

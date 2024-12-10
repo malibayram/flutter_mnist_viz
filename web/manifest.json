@@ -1,6 +1,6 @@
 {
-    "name": "mnist",
-    "short_name": "mnist",
+    "name": "flutter_mnist_viz",
+    "short_name": "flutter_mnist_viz",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
