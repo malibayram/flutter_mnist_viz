@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         // This is the theme of your application.
         //
         // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
+        // the application has a purple toolbar. Then, without quitting the app,5
         // try changing the seedColor in the colorScheme below to Colors.green
         // and then invoke "hot reload" (save your changes or press the "hot
         // reload" button in a Flutter-supported IDE, or press "r" if you used
@@ -108,12 +108,9 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
             Row(
               children: [
-                for (final i in List<int>.generate(10, (i) => i))
+                for (final _ in List<int>.generate(10, (i) => i))
                   Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: KareKutu(
@@ -126,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                for (final i in List<int>.generate(25, (i) => i))
+                for (final _ in List<int>.generate(25, (i) => i))
                   Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: KareKutu(
@@ -139,12 +136,12 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                for (final i in List<int>.generate(25, (i) => i))
+                for (final _ in List<int>.generate(20, (i) => i))
                   Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: KareKutu(
                       percentage: (_counter % 11) / 10,
-                      width: MediaQuery.of(context).size.width / 25 - 4,
+                      width: MediaQuery.of(context).size.width / 20 - 4,
                     ),
                   ),
               ],
