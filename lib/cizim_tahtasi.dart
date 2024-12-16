@@ -10,9 +10,10 @@ class CizimTahtasi extends StatefulWidget {
 class _CizimTahtasiState extends State<CizimTahtasi> {
   final noktalar = <Offset?>[];
 
-  var resimMatrisi = List<List<int>>.generate(
-    360,
-    (i) => List<int>.generate(360, (j) => 0),
+  var resimMatrisi = <List<int>>[];
+  var yeniResimMatrisi = List<List<int>>.generate(
+    28,
+    (i) => List<int>.generate(28, (j) => 0),
   );
 
   @override
@@ -24,45 +25,13 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
             IconButton(
               icon: const Icon(Icons.clear),
               onPressed: () {
-                setState(() {
-                  noktalar.clear(); // Clear the sketch
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () {
-                resimMatrisi = List<List<int>>.generate(
-                  360,
-                  (i) => List<int>.generate(360, (j) => 0),
+                noktalar.clear(); // Clear the sketch
+                yeniResimMatrisi = List<List<int>>.generate(
+                  28,
+                  (i) => List<int>.generate(28, (j) => 0),
                 );
-                for (final nokta in noktalar) {
-                  if (nokta != null) {
-                    /*  print(
-                      "nokta.dx: ${nokta.dx.toInt()} nokta.dy: ${nokta.dy.toInt()}",
-                    ); */
-                    resimMatrisi[nokta.dy.toInt()][nokta.dx.toInt()] = 1;
-                  }
-                }
-                // resim matrisi to 36x36 by summing up the 10x10 blocks
-                final yeniResimMatrisi = List<List<int>>.generate(
-                  36,
-                  (i) => List<int>.generate(36, (j) => 0),
-                );
-                for (int i = 0; i < 36; i++) {
-                  for (int j = 0; j < 36; j++) {
-                    for (int k = 0; k < 10; k++) {
-                      for (int l = 0; l < 10; l++) {
-                        yeniResimMatrisi[i][j] +=
-                            resimMatrisi[i * 10 + k][j * 10 + l];
-                      }
-                    }
-                  }
-                }
-                // print the 36x36 matrix
-                for (int i = 0; i < 36; i++) {
-                  print("$i.\t${yeniResimMatrisi[i]}");
-                }
+
+                setState(() {});
               },
             ),
           ],
@@ -80,19 +49,51 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
 
                   if (nokta.dx >= 0 &&
                       nokta.dy >= 0 &&
-                      nokta.dx <= renderBox.size.width &&
-                      nokta.dy <= renderBox.size.height) {
+                      nokta.dx <= (renderBox.size.width - 48) &&
+                      nokta.dy <= (renderBox.size.height - 48)) {
                     /* noktalar.add(nokta);
                     setState(() {}); */
                     // add 10 points for each pixel
-                    for (int i = 0; i < 10; i++) {
-                      for (int j = 0; j < 10; j++) {
+                    for (int i = 0; i < 11; i++) {
+                      for (int j = 0; j < 11; j++) {
                         noktalar.add(Offset(
                           nokta.dx + i.toDouble(),
                           nokta.dy + j.toDouble(),
                         ));
                       }
                     }
+                    resimMatrisi = List<List<int>>.generate(
+                      312,
+                      (i) => List<int>.generate(312, (j) => 0),
+                    );
+                    for (final nokta in noktalar) {
+                      if (nokta != null &&
+                          nokta.dx >= 0 &&
+                          nokta.dy >= 0 &&
+                          nokta.dx <= 312 &&
+                          nokta.dy <= 312) {
+                        /*  print(
+                      "nokta.dx: ${nokta.dx.toInt()} nokta.dy: ${nokta.dy.toInt()}",
+                    ); */
+                        resimMatrisi[nokta.dy.toInt()][nokta.dx.toInt()] = 1;
+                      }
+                    }
+                    // resim matrisi to 36x36 by summing up the 10x10 blocks
+                    yeniResimMatrisi = List<List<int>>.generate(
+                      28,
+                      (i) => List<int>.generate(28, (j) => 0),
+                    );
+                    for (int i = 0; i < 28; i++) {
+                      for (int j = 0; j < 28; j++) {
+                        for (int k = 0; k < 11; k++) {
+                          for (int l = 0; l < 11; l++) {
+                            yeniResimMatrisi[i][j] +=
+                                resimMatrisi[i * 11 + k][j * 11 + l];
+                          }
+                        }
+                      }
+                    }
+
                     setState(() {});
                   }
                 },
@@ -101,8 +102,34 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
                   setState(() {}); // Rebuild the widget
                 },
                 child: CustomPaint(
+                  size: const Size(312, 312),
                   painter: _CizimAlani(noktalar),
-                  child: const SizedBox(),
+                  child: Container(
+                    color: const Color(0xfff596ff),
+                    width: 312,
+                    height: 312,
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < 28; i++)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                for (int j = 0; j < 28; j++)
+                                  Expanded(
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      color: yeniResimMatrisi[i][j] == 0
+                                          ? Colors.transparent
+                                          : Colors.yellow,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
