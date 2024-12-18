@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CizimTahtasi extends StatefulWidget {
-  const CizimTahtasi({super.key});
+  const CizimTahtasi({super.key, required this.onImageUpdated});
+
+  // a function return List<int> to get the image matrix
+  final Function(List<double>) onImageUpdated;
 
   @override
   State<CizimTahtasi> createState() => _CizimTahtasiState();
@@ -11,9 +14,9 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
   final noktalar = <Offset?>[];
 
   var resimMatrisi = <List<int>>[];
-  var yeniResimMatrisi = List<List<int>>.generate(
+  var yeniResimMatrisi = List<List<double>>.generate(
     28,
-    (i) => List<int>.generate(28, (j) => 0),
+    (i) => List<double>.generate(28, (j) => 0.0),
   );
 
   @override
@@ -26,9 +29,12 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
               icon: const Icon(Icons.clear),
               onPressed: () {
                 noktalar.clear(); // Clear the sketch
-                yeniResimMatrisi = List<List<int>>.generate(
+                yeniResimMatrisi = List<List<double>>.generate(
                   28,
-                  (i) => List<int>.generate(28, (j) => 0),
+                  (i) => List<double>.generate(28, (j) => 0),
+                );
+                widget.onImageUpdated(
+                  yeniResimMatrisi.expand((e) => e).toList(),
                 );
 
                 setState(() {});
@@ -79,9 +85,9 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
                       }
                     }
                     // resim matrisi to 36x36 by summing up the 10x10 blocks
-                    yeniResimMatrisi = List<List<int>>.generate(
+                    yeniResimMatrisi = List<List<double>>.generate(
                       28,
-                      (i) => List<int>.generate(28, (j) => 0),
+                      (i) => List<double>.generate(28, (j) => 0),
                     );
                     for (int i = 0; i < 28; i++) {
                       for (int j = 0; j < 28; j++) {
@@ -91,8 +97,13 @@ class _CizimTahtasiState extends State<CizimTahtasi> {
                                 resimMatrisi[i * 11 + k][j * 11 + l];
                           }
                         }
+                        yeniResimMatrisi[i][j] /= 121;
                       }
                     }
+
+                    widget.onImageUpdated(
+                      yeniResimMatrisi.expand((e) => e).toList(),
+                    );
 
                     setState(() {});
                   }

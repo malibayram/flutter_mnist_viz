@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'cizim_tahtasi.dart';
@@ -58,17 +60,92 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  // random matrix of 784 x 25 for first layers weights
+  final _firstLayerWeights = List.generate(
+    784,
+    (i) => List.generate(
+      20,
+      (j) => Random().nextDouble() * (Random().nextBool() ? 1 : -1),
+    ),
+  );
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  final _firstLayerOutput = List.generate(20, (i) => 0.0);
+
+  final _secondLayerWeights = List.generate(
+    20,
+    (i) => List.generate(
+      25,
+      (j) => Random().nextDouble() * (Random().nextBool() ? 1 : -1),
+    ),
+  );
+
+  final _secondLayerOutput = List.generate(25, (i) => 0.0);
+
+  final _lastLayerWeights = List.generate(
+    25,
+    (i) => List.generate(
+      10,
+      (j) => Random().nextDouble() * (Random().nextBool() ? 1 : -1),
+    ),
+  );
+
+  final _lastLayerOutput = List.generate(10, (i) => 0.0);
+
+  void _calculateOutput(List<double> imagePixels) {
+    // if all pixels are white, call _clear method
+    if (imagePixels.every((e) => e == 0)) {
+      _clear();
+      return;
+    }
+
+    for (var i = 0; i < _firstLayerOutput.length; i++) {
+      _firstLayerOutput[i] = 0;
+      for (var j = 0; j < imagePixels.length; j++) {
+        _firstLayerOutput[i] += imagePixels[j] * _firstLayerWeights[j][i];
+      }
+      _firstLayerOutput[i] = 1 / (1 + exp(-_firstLayerOutput[i]));
+    }
+
+    for (var i = 0; i < _secondLayerOutput.length; i++) {
+      _secondLayerOutput[i] = 0;
+      for (var j = 0; j < _firstLayerOutput.length; j++) {
+        _secondLayerOutput[i] +=
+            _firstLayerOutput[j] * _secondLayerWeights[j][i];
+      }
+      _secondLayerOutput[i] = 1 / (1 + exp(-_secondLayerOutput[i]));
+    }
+
+    // calculate output layer using softmax
+    var sum = 0.0;
+    for (var i = 0; i < _lastLayerOutput.length; i++) {
+      _lastLayerOutput[i] = 0;
+      for (var j = 0; j < _secondLayerOutput.length; j++) {
+        _lastLayerOutput[i] += _secondLayerOutput[j] * _lastLayerWeights[j][i];
+      }
+      sum += exp(_lastLayerOutput[i]);
+    }
+
+    for (var i = 0; i < _lastLayerOutput.length; i++) {
+      _lastLayerOutput[i] = exp(_lastLayerOutput[i]) / sum;
+    }
+
+    setState(() {});
+  }
+
+  void _clear() {
+    for (var i = 0; i < _firstLayerOutput.length; i++) {
+      _firstLayerOutput[i] = 0;
+    }
+
+    for (var i = 0; i < _secondLayerOutput.length; i++) {
+      _secondLayerOutput[i] = 0;
+    }
+
+    for (var i = 0; i < _lastLayerOutput.length; i++) {
+      _lastLayerOutput[i] = 0;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -110,12 +187,31 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Row(
               children: [
-                for (final _ in List<int>.generate(10, (i) => i))
+                for (int i = 0; i < _lastLayerOutput.length; i++)
                   Padding(
                     padding: const EdgeInsets.all(2.0),
-                    child: KareKutu(
-                      percentage: (_counter % 11) / 10,
-                      width: MediaQuery.of(context).size.width / 10 - 4,
+                    child: Column(
+                      children: [
+                        Text(
+                          "$i",
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        KareKutu(
+                          percentage: _lastLayerOutput[i],
+                          width: MediaQuery.of(context).size.width /
+                                  _lastLayerOutput.length -
+                              4,
+                        ),
+                        Text(
+                          _lastLayerOutput[i].toStringAsFixed(2),
+                          style: TextStyle(
+                            fontSize: 200 / _lastLayerOutput.length,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
@@ -123,12 +219,24 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                for (final _ in List<int>.generate(25, (i) => i))
+                for (final output in _secondLayerOutput)
                   Padding(
                     padding: const EdgeInsets.all(2.0),
-                    child: KareKutu(
-                      percentage: (_counter % 11) / 10,
-                      width: MediaQuery.of(context).size.width / 25 - 4,
+                    child: Column(
+                      children: [
+                        KareKutu(
+                          percentage: output,
+                          width: MediaQuery.of(context).size.width /
+                                  _secondLayerOutput.length -
+                              4,
+                        ),
+                        Text(
+                          output.toStringAsFixed(2),
+                          style: TextStyle(
+                            fontSize: 200 / _secondLayerOutput.length,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
@@ -136,29 +244,35 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                for (final _ in List<int>.generate(20, (i) => i))
+                for (final output in _firstLayerOutput)
                   Padding(
                     padding: const EdgeInsets.all(2.0),
-                    child: KareKutu(
-                      percentage: (_counter % 11) / 10,
-                      width: MediaQuery.of(context).size.width / 20 - 4,
+                    child: Column(
+                      children: [
+                        KareKutu(
+                          percentage: output,
+                          width: MediaQuery.of(context).size.width /
+                                  _firstLayerOutput.length -
+                              4,
+                        ),
+                        Text(
+                          output.toStringAsFixed(2),
+                          style: TextStyle(
+                              fontSize: 200 / _firstLayerOutput.length),
+                        ),
+                      ],
                     ),
                   ),
               ],
             ),
             const SizedBox(height: 8),
-            const SizedBox(
+            SizedBox(
               height: 360,
               width: 360,
-              child: CizimTahtasi(),
+              child: CizimTahtasi(onImageUpdated: _calculateOutput),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
